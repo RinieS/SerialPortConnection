@@ -1,4 +1,7 @@
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -9,65 +12,106 @@ import com.fazecast.jSerialComm.*;
 
 public class AppMain {
 
+	static SerialPort selected;
 	
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 
 		
-		SerialPort[] ports = SerialPort.getCommPorts();
-		for (SerialPort port: ports)
-		    System.out.println(port.getSystemPortPath());
-	
-
-		SerialPort sp = SerialPort.getCommPort(ports[1].getSystemPortPath());
-		sp.setComPortParameters(9600, 8, 1, 0); // default connection settings for Arduino
-		sp.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING, 1000, 0);
-    
-    
-		boolean hasOpenned = sp.openPort();
-		if(hasOpenned) {
-		System.out.println("connected");
-	}
-		else {
-		throw new IllegalStateException ("Failed to open");
-	}
-		
-		
 		
 		   JFrame f = new JFrame("Temperature reader");
 		   //set size and location of frame
-		   f.setSize(390, 300);
-		   f.setLocation(100, 150);
+		   f.setSize(600, 400);
+		   f.setLayout(new BorderLayout());
 		   //make sure it quits when x is clicked
 		   f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		   //set look and feel
-		   f.setDefaultLookAndFeelDecorated(true);
-		   JLabel labelM = new JLabel("Temperature read in Celcius: ");
-		   labelM.setBounds(50, 50, 200, 30);
-		   JTextField result = new JTextField();
-		   //set size of the text box
-		   result.setBounds(50, 100, 200, 30);
-		   result.setEditable(false);
-		   //add elements to the frame
-		   f.add(labelM);
-		   f.add(result);
-		   f.setLayout(null);
-		   f.setVisible(true);
-		
-		
 	
-		BufferedReader br = new BufferedReader(new InputStreamReader (sp.getInputStream()));
-		//Scanner data = new Scanner (sp.getInputStream());
-		String value = "0"; 
-		while (true) {
+		   
+		   //drop down for the selection of ports 
+		   JComboBox<String>portList = new JComboBox<String>();
+		   JButton connect = new JButton("Connect");
+		   JPanel tp = new JPanel();
+		   tp.add(portList);
+		   tp.add(connect);
+		   f.add(tp, BorderLayout.NORTH);
+		   
+		   //get ports for drop down list 
+		   
+		   SerialPort[] ports = SerialPort.getCommPorts();
+			for (SerialPort port: ports) {
+				portList.addItem(port.getSystemPortName());
+			    System.out.println(port.getSystemPortPath());
+			
+			}
+			
+			
+		   JLabel labelM = new JLabel("Temperature read in Celcius: ");
+		   labelM.setBounds(10, 100, 200, 30);
+		   JTextField result = new JTextField(5);
+		   //set size of the text box
+		   
+		   result.setBounds(10, 100, 200, 30);
+		   result.setEditable(false);
+		   result.setVisible(true);
+		   //add elements to the frame
+		  JPanel bp = new JPanel();
+		  bp.add(labelM);
+		   bp.add(result);
+		   
+		   
+		   f.add(bp, BorderLayout.CENTER);
 		
-		value = br.readLine();
-		//System.out.println(value);
-		result.setText(value);
+		
+		// connect button action listener 
+		   
+		   connect.addActionListener(new ActionListener() {
+			   @Override 
+			   public void actionPerformed(ActionEvent arg0) {
+				   if(connect.getText().equals("Connect")) {
+					   selected = SerialPort.getCommPort(portList.getSelectedItem().toString());
+					   selected.setComPortTimeouts(SerialPort.TIMEOUT_SCANNER, 0, 0);
+					   if(selected.openPort()) {
+						   connect.setText("Disconnect");
+						   portList.setEnabled(false);
+					   }
+					  
+					   Thread thread = new Thread() {
+						   @Override 
+						   public void run() {
+							   BufferedReader br = new BufferedReader(new InputStreamReader (selected.getInputStream()));
+							   String value = "0"; 
+								try {
+									while ((value = br.readLine()) != null) {
+									
+									result.setText(value);
+   }
+								} catch (IOException e) {
+									
+									e.printStackTrace();
+								}
+					   }
+						  
+				   };
+				   thread.start();
+			   }else {
+				   selected.closePort();
+				   portList.setEnabled(true);
+				   connect.setText("Connect");
+			   }
+		   }
+
+			
+		   });
+	
+		   f.setVisible(true);
+	
+		
+		
+		
 
 		
 	}
 
 }
 	
-}
+

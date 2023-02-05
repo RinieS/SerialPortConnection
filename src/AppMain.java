@@ -8,12 +8,17 @@ import java.io.InputStreamReader;
 import javax.swing.*;
 
 import com.fazecast.jSerialComm.*;
-
+import org.jfree.*;
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartPanel;
+import org.jfree.chart.JFreeChart;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 public class AppMain {
 
 	static SerialPort selected;
-	
+	static int i=0;
 	public static void main(String[] args) throws IOException {
 		// TODO Auto-generated method stub
 
@@ -34,6 +39,13 @@ public class AppMain {
 		   tp.add(portList);
 		   tp.add(connect);
 		   f.add(tp, BorderLayout.NORTH);
+		   
+		   // create a graph
+		   XYSeries series = new XYSeries ("Temperature reading graph");
+		   XYSeriesCollection dataset = new XYSeriesCollection(series);
+		   JFreeChart chart = ChartFactory.createXYLineChart("Temp sensor reading", "Time:Seconds", "Temp in Celcius", dataset);
+		   f.add(new ChartPanel(chart), BorderLayout.CENTER);
+		   
 		   
 		   //get ports for drop down list 
 		   
@@ -59,7 +71,7 @@ public class AppMain {
 		   bp.add(result);
 		   
 		   
-		   f.add(bp, BorderLayout.CENTER);
+		   f.add(bp, BorderLayout.SOUTH);
 		
 		
 		// connect button action listener 
@@ -82,7 +94,8 @@ public class AppMain {
 							   String value = "0"; 
 								try {
 									while ((value = br.readLine()) != null) {
-									
+									double n = Double.parseDouble(value);
+									series.add(i++, n);
 									result.setText(value);
    }
 								} catch (IOException e) {

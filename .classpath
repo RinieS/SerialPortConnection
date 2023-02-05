@@ -7,5 +7,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/14036/Downloads/jSerialComm-2.9.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/14036/Desktop/java jars/jcommon-1.0.23.jar"/>
+	<classpathentry kind="lib" path="C:/Users/14036/Desktop/java jars/jfreechart-1.0.19.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
